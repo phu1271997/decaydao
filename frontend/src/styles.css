@@ -1,0 +1,412 @@
+/* DecayDAO — "ink & rust"
+   A synthetic jurisdiction for IP. Licenses are living legal documents that
+   glow while honoured and corrode as they drift. The signature element is the
+   health meter that shifts from living green to rust as a license decays. */
+
+:root {
+  --ink: #0e1116;         /* deep ink background */
+  --ink-2: #151a22;       /* raised surfaces */
+  --ink-3: #1c2430;       /* cards */
+  --paper: #ece4d3;       /* aged paper text */
+  --paper-dim: #a9a290;   /* muted paper */
+  --living: #6fcf97;      /* honoured / healthy */
+  --living-deep: #2f9e63;
+  --drift: #e0b25a;       /* drifting / warning */
+  --rust: #c85a3c;        /* breached / decayed */
+  --rust-deep: #8f3a26;
+  --seal: #7a86ff;        /* accent: notary seal violet */
+  --line: rgba(236, 228, 211, 0.12);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 700px at 78% -8%, #1a2230 0%, var(--ink) 55%);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  position: relative;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+  min-height: 100%;
+}
+
+/* faint paper grain so the "ink" feels like a printed ledger */
+.bg-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 2px, #fff 2px, #fff 3px
+  );
+  mix-blend-mode: overlay;
+  z-index: 0;
+}
+
+.wrap > * { position: relative; z-index: 1; }
+
+/* ---- masthead ---- */
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark {
+  font-size: 26px;
+  color: var(--seal);
+  filter: drop-shadow(0 0 10px rgba(122, 134, 255, 0.5));
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+/* ---- hero ---- */
+.hero { padding: 56px 0 32px; max-width: 760px; }
+.headline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(34px, 6vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0 0 22px;
+}
+.headline em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--living);
+}
+.dek {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--paper-dim);
+  max-width: 640px;
+}
+.dek strong { color: var(--drift); font-weight: 700; }
+
+/* ---- layout grid ---- */
+.grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  margin-top: 20px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--ink-2), var(--ink));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+.grant-panel { position: sticky; top: 20px; }
+.list-panel { min-width: 0; }
+.wallet { display: flex; align-items: center; }
+@media (max-width: 880px) {
+  .grant-panel { position: static; }
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0 0 18px;
+}
+
+/* ---- form ---- */
+.field { display: block; margin-bottom: 16px; }
+.field span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  margin-bottom: 7px;
+}
+.field input,
+.field textarea {
+  width: 100%;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 11px 13px;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--seal);
+  box-shadow: 0 0 0 3px rgba(122, 134, 255, 0.18);
+}
+.field input.mono, .mono { font-family: var(--font-mono); }
+
+.hint { font-size: 13px; color: var(--paper-dim); margin: 10px 0 0; }
+
+/* ---- buttons ---- */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  background: var(--ink-3);
+  color: var(--paper);
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(236,228,211,0.28); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(180deg, var(--living), var(--living-deep));
+  color: #08130c;
+  border-color: transparent;
+}
+.btn-connect { background: var(--seal); color: #0b0e18; border-color: transparent; }
+.btn-ghost { background: transparent; }
+.btn.small { padding: 7px 12px; font-size: 13px; }
+
+/* ---- list ---- */
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.list-head .panel-title { margin: 0; }
+.cards { display: grid; gap: 16px; }
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--paper-dim);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+
+/* ---- license card ---- */
+.card {
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  transition: border-color 0.2s ease, opacity 0.3s ease;
+}
+.card:hover { border-color: rgba(236,228,211,0.22); }
+.card-revoked { opacity: 0.72; }
+.card-revoked .asset { text-decoration: line-through; text-decoration-color: var(--rust); }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--paper-dim);
+  text-transform: uppercase;
+}
+.asset {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 3px 0 0;
+}
+.verdict {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.verdict-good { background: rgba(111, 207, 151, 0.15); color: var(--living); }
+.verdict-warn { background: rgba(224, 178, 90, 0.15); color: var(--drift); }
+.verdict-bad { background: rgba(200, 90, 60, 0.18); color: var(--rust); }
+.verdict-idle { background: rgba(236, 228, 211, 0.08); color: var(--paper-dim); }
+
+.terms {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--paper);
+  margin: 14px 0 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--seal);
+}
+
+/* signature element: the decay meter */
+.meter {
+  position: relative;
+  height: 30px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rust-deep), var(--drift) 55%, var(--living));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.meter-dead {
+  background: repeating-linear-gradient(
+    45deg, var(--rust-deep), var(--rust-deep) 6px, #6e2c1c 6px, #6e2c1c 12px
+  );
+}
+.meter-num {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 18px;
+  margin: 0 0 14px;
+}
+.meta-grid dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--paper-dim);
+}
+.meta-grid dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  word-break: break-word;
+}
+.meta-grid a { color: var(--seal); text-decoration: none; }
+.meta-grid a:hover { text-decoration: underline; }
+
+.reason {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--paper-dim);
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 11px 13px;
+  margin: 0 0 14px;
+}
+.reason-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--seal);
+  margin-right: 6px;
+}
+
+.card-actions .btn { width: 100%; }
+
+/* ---- misc chrome ---- */
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--paper-dim);
+}
+.foot-tag { font-family: var(--font-display); font-style: italic; }
+
+.banner {
+  margin: 18px 0;
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.banner-warn { background: rgba(224, 178, 90, 0.12); color: var(--drift); border: 1px solid rgba(224,178,90,0.3); }
+.banner code { font-family: var(--font-mono); }
+
+.banner-error {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: 90vw;
+  background: var(--rust-deep);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.dismiss { margin-left: 10px; opacity: 0.8; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: var(--ink-3);
+  border: 1px solid var(--living);
+  color: var(--living);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+/* focus visibility for keyboard users */
+.btn:focus-visible,
+.field input:focus-visible,
+.field textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
+}
