@@ -21,16 +21,18 @@ Covered:
 import json
 import pytest
 from gltest import get_contract_factory
-from gltest.assertions import tx_execution_succeeded
+from gltest.assertions import tx_execution_succeeded, tx_execution_failed
 
 
 CONTRACT = "decaydao.py"
 
 
-def _install_mocks(client, verdict="COMPLIANT", confidence=90,
+def _install_mocks(verdict="COMPLIANT", confidence=90,
                    reason="Use honours the spirit of the terms.",
                    page_body="This is a personal, non-commercial fan page."):
     """Install LLM + web mocks. params MUST be a bare dict, not list-wrapped (R17)."""
+    from gltest import get_gl_client
+    client = get_gl_client()
     llm_payload = json.dumps({
         "verdict": verdict,
         "confidence": confidence,
@@ -46,7 +48,7 @@ def _install_mocks(client, verdict="COMPLIANT", confidence=90,
 
 
 def _deploy():
-    factory = get_contract_factory(CONTRACT)
+    factory = get_contract_factory(contract_file_path=CONTRACT)
     contract = factory.deploy(args=[])
     return contract
 
@@ -66,8 +68,7 @@ def test_grant_and_compliant_review():
     ).transact()
     assert tx_execution_succeeded(tx)
 
-    _install_mocks(contract.client if hasattr(contract, "client") else acct,
-                   verdict="COMPLIANT", confidence=90)
+    _install_mocks(verdict="COMPLIANT", confidence=90)
 
     tx = contract.connect(acct).review_license(args=["0"]).transact()
     assert tx_execution_succeeded(tx)
@@ -92,7 +93,7 @@ def test_repeated_violations_revoke():
         ]
     ).transact()
 
-    _install_mocks(acct, verdict="VIOLATED", confidence=95,
+    _install_mocks(verdict="VIOLATED", confidence=95,
                    reason="Page sells merchandise using the logo.",
                    page_body="Buy now! Official store, add to cart, $49.99")
 
@@ -116,7 +117,7 @@ def test_drifting_lowers_health():
         args=["0xL", "Asset", "Educational use only.", "https://example.org/x"]
     ).transact()
 
-    _install_mocks(acct, verdict="DRIFTING", confidence=50,
+    _install_mocks(verdict="DRIFTING", confidence=50,
                    reason="Borderline: some commercial framing appearing.")
     contract.connect(acct).review_license(args=["0"]).transact()
     lic = json.loads(contract.get_license(args=["0"]).call())
@@ -130,20 +131,20 @@ def test_guards():
     acct = contract.account
 
     # empty terms rejected
-    with pytest.raises(Exception):
-        contract.connect(acct).grant_license(
-            args=["0xL", "Asset", "  ", "https://example.org"]
-        ).transact()
+    tx = contract.connect(acct).grant_license(
+        args=["0xL", "Asset", "  ", "https://example.org"]
+    ).transact()
+    assert tx_execution_failed(tx)
 
     # bad url rejected
-    with pytest.raises(Exception):
-        contract.connect(acct).grant_license(
-            args=["0xL", "Asset", "terms", "not-a-url"]
-        ).transact()
+    tx = contract.connect(acct).grant_license(
+        args=["0xL", "Asset", "terms", "not-a-url"]
+    ).transact()
+    assert tx_execution_failed(tx)
 
     # review missing license rejected
-    with pytest.raises(Exception):
-        contract.connect(acct).review_license(args=["999"]).transact()
+    tx = contract.connect(acct).review_license(args=["999"]).transact()
+    assert tx_execution_failed(tx)
 
 
 def test_reinstate_only_by_licensor():
@@ -153,7 +154,7 @@ def test_reinstate_only_by_licensor():
         args=["0xL", "Asset", "Non-commercial.", "https://example.org/y"]
     ).transact()
 
-    _install_mocks(acct, verdict="VIOLATED", confidence=95,
+    _install_mocks(verdict="VIOLATED", confidence=95,
                    page_body="commercial store buy now")
     contract.connect(acct).review_license(args=["0"]).transact()
     contract.connect(acct).review_license(args=["0"]).transact()

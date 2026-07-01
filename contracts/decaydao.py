@@ -1,12 +1,14 @@
 # v0.2.16
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+from genlayer import *
+
 #
-# DecayDAO — Self-adjusting IP licenses that read the real world.
+# DecayDAO - Self-adjusting IP licenses that read the real world.
 # ---------------------------------------------------------------------------
 # A licensor grants a licensee the right to use an asset (logo, brand, artwork,
 # dataset, name) under TERMS WRITTEN IN NATURAL LANGUAGE ("the spirit of the
 # license"). Traditional smart contracts cannot enforce a clause like
-# "non-commercial use only" or "must credit the author" — they can neither read
+# "non-commercial use only" or "must credit the author" - they can neither read
 # the licensee's live website nor judge whether a use honours the *spirit* of
 # the grant.
 #
@@ -15,7 +17,7 @@
 # COMPLIANT / DRIFTING / VIOLATED against the natural-language terms. Consensus
 # is reached on the MEANING of the verdict (not its JSON shape), so two
 # validators that word their rationale differently still agree. A license that
-# drifts loses "health"; enough violations and it decays to REVOKED on-chain —
+# drifts loses "health"; enough violations and it decays to REVOKED on-chain -
 # no human adjudicator, no oracle.
 #
 # Why this DIES without GenLayer: the core is a subjective judgement over
@@ -23,8 +25,6 @@
 # single party should decide alone. Remove the AI+web and nothing is left but a
 # dumb key-value store.
 # ---------------------------------------------------------------------------
-
-from genlayer import *
 
 import json
 import typing
@@ -96,7 +96,7 @@ class Contract(gl.Contract):
     next_id: bigint
 
     def __init__(self):
-        # Do NOT touch TreeMap here (R2) — GenVM auto-inits it to empty.
+        # Do NOT touch TreeMap here (R2) - GenVM auto-inits it to empty.
         self.next_id = bigint(0)
 
     # -----------------------------------------------------------------------
@@ -146,7 +146,7 @@ class Contract(gl.Contract):
     @gl.public.write
     def review_license(self, license_id: str) -> None:
         """Fetch the monitored URL and let the AI jury rule on the SPIRIT of
-        the terms. Adjusts health and may revoke. Anyone can call this — the
+        the terms. Adjusts health and may revoke. Anyone can call this - the
         point is that no single party decides."""
         if license_id not in self.licenses:
             raise gl.vm.UserError("License not found")
@@ -161,7 +161,7 @@ class Contract(gl.Contract):
         asset = lic.asset
 
         def leader_fn():
-            # Read the licensee's live page directly on-chain — no oracle.
+            # Read the licensee's live page directly on-chain - no oracle.
             page = gl.nondet.web.render(url, mode="text")
             if page is None:
                 page = ""
