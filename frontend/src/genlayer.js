@@ -6,7 +6,7 @@
 // No private key is ever read in the frontend. MetaMask signs.
 
 import { createClient } from "genlayer-js";
-import { simulator } from "genlayer-js/chains";
+import { studionet } from "genlayer-js/chains";
 
 // The hosted GenLayer Studio RPC. genlayer-js's `simulator` chain has the right
 // chain id (61999) but defaults to localhost, so we override the endpoint to
@@ -22,7 +22,7 @@ export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "";
 
 // Chain object bound to the hosted Studio endpoint.
 const chain = {
-  ...simulator,
+  ...studionet,
   rpcUrls: { default: { http: [STUDIO_RPC] } },
 };
 
