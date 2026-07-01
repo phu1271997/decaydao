@@ -98,6 +98,21 @@ export async function fetchLicenses() {
   return Array.isArray(raw) ? raw : [];
 }
 
+async function checkReceipt(client, hash, retries = 100) {
+  const receipt = await client.waitForTransactionReceipt({
+    hash,
+    status: "FINALIZED",
+    retries,
+    interval: 5000,
+  });
+  const leader = receipt.consensus_data?.leader_receipt?.[0];
+  if (leader && leader.execution_result !== "SUCCESS") {
+    const errorDetail = leader.genvm_result?.error?.message || leader.genvm_result?.error || "Transaction reverted on-chain.";
+    throw new Error(errorDetail);
+  }
+  return receipt;
+}
+
 export async function grantLicense(address, { licensee, asset, terms, url }) {
   const client = makeWriteClient(address);
   const hash = await client.writeContract({
@@ -106,12 +121,7 @@ export async function grantLicense(address, { licensee, asset, terms, url }) {
     args: [licensee, asset, terms, url],
     value: 0n,
   });
-  await client.waitForTransactionReceipt({
-    hash,
-    status: "FINALIZED",
-    retries: 100,
-    interval: 5000,
-  });
+  await checkReceipt(client, hash, 100);
   return hash;
 }
 
@@ -124,12 +134,7 @@ export async function reviewLicense(address, licenseId) {
     value: 0n,
   });
   // Non-deterministic tx (web + LLM + consensus) — this is the slow one.
-  await client.waitForTransactionReceipt({
-    hash,
-    status: "FINALIZED",
-    retries: 200,
-    interval: 5000,
-  });
+  await checkReceipt(client, hash, 200);
   return hash;
 }
 
@@ -141,12 +146,7 @@ export async function reinstateLicense(address, licenseId) {
     args: [String(licenseId)],
     value: 0n,
   });
-  await client.waitForTransactionReceipt({
-    hash,
-    status: "FINALIZED",
-    retries: 100,
-    interval: 5000,
-  });
+  await checkReceipt(client, hash, 100);
   return hash;
 }
 
