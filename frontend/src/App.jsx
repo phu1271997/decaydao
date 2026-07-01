@@ -166,6 +166,11 @@ export default function App() {
       setError("Asset, terms, and monitored URL are all required.");
       return;
     }
+    const urlTrimmed = form.url.trim();
+    if (!urlTrimmed.startsWith("http://") && !urlTrimmed.startsWith("https://")) {
+      setError("Monitored URL must start with http:// or https://");
+      return;
+    }
     setGranting(true);
     try {
       await grantLicense(address, {
