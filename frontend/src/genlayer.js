@@ -70,7 +70,7 @@ export async function connectWallet() {
 
 // A read-only client (no account) is enough for views.
 export function makeReadClient() {
-  return createClient({ chain, endpoint: STUDIO_RPC });
+  return createClient({ chain, endpoint: STUDIO_RPC, account: "0x0000000000000000000000000000000000000000" });
 }
 
 // A signing client bound to the connected address (MetaMask signs).
