@@ -105,10 +105,24 @@ async function checkReceipt(client, hash, retries = 100) {
     retries,
     interval: 5000,
   });
+  console.log("[DecayDAO] Transaction receipt:", JSON.stringify(receipt, null, 2));
+  // Check top-level status
+  const statusName = receipt.status_name || receipt.statusName || "";
+  if (statusName === "UNDETERMINED" || statusName === "CANCELED") {
+    throw new Error(`Transaction ${statusName.toLowerCase()} by the network.`);
+  }
+  // Check leader execution result
   const leader = receipt.consensus_data?.leader_receipt?.[0];
-  if (leader && leader.execution_result !== "SUCCESS") {
-    const errorDetail = leader.genvm_result?.error?.message || leader.genvm_result?.error || "Transaction reverted on-chain.";
-    throw new Error(errorDetail);
+  if (leader && leader.execution_result && leader.execution_result !== "SUCCESS") {
+    const gvm = leader.genvm_result || {};
+    const errorDetail =
+      gvm.stderr ||
+      gvm.error?.message ||
+      gvm.error ||
+      leader.error?.message ||
+      leader.error ||
+      `Transaction failed (${leader.execution_result}).`;
+    throw new Error(typeof errorDetail === "string" ? errorDetail : JSON.stringify(errorDetail));
   }
   return receipt;
 }
